@@ -61,4 +61,7 @@ void timerCB(int v);
 void keyboard(unsigned char key, int x, int y);
 void reshape(int w, int h);
 
+/* Add this to your drive.h file */
+void drawCar(float x, float y);
+
 #endif

@@ -86,86 +86,6 @@ void building(float x, float y, float w, float h,
   fc(x + w * 0.6f, y + h + 22, 3); /* red warning light */
 }
 
-/* Highly detailed car */
-void realCar(float x, float y, float br, float bg, float bb, int dir)
-{
-  /* wet ground reflection */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColor4f(br * 0.30f, bg * 0.30f, bb * 0.30f, 0.55f);
-  glBegin(GL_POLYGON);
-  glVertex2f(x + 5, y - 2);
-  glVertex2f(x + 68, y - 2);
-  glVertex2f(x + 62, y - 11);
-  glVertex2f(x + 11, y - 11);
-  glEnd();
-  glDisable(GL_BLEND);
-  /* tyre shadow */
-  col3(0.0f, 0.0f, 0.0f);
-  fc(x + 13, y + 7, 12);
-  fc(x + 55, y + 7, 12);
-  /* tyres */
-  col3(0.07f, 0.07f, 0.07f);
-  fc(x + 13, y + 7, 11);
-  fc(x + 55, y + 7, 11);
-  col3(0.18f, 0.18f, 0.20f);
-  fc(x + 13, y + 7, 6);
-  fc(x + 55, y + 7, 6);
-  col3(0.08f, 0.08f, 0.08f);
-  mca(x + 13, y + 7, 6);
-  mca(x + 55, y + 7, 6);
-  /* body — gradient shaded */
-  for (float yy = y + 7; yy < y + 28; yy += 0.5f)
-  {
-    float sh = 0.78f + 0.22f * (yy - y - 7) / 21.0f;
-    col3(br * sh, bg * sh, bb * sh);
-    dda(x, yy, x + 72, yy);
-  }
-  /* side panel highlight */
-  col3(cl(br + 0.22f), cl(bg + 0.22f), cl(bb + 0.22f));
-  dda(x + 2, y + 20, x + 70, y + 20);
-  /* cabin (darker tint) */
-  for (float yy = y + 28; yy < y + 42; yy += 0.5f)
-  {
-    float sh = 0.62f + 0.12f * (yy - y - 28) / 14.0f;
-    col3(br * sh * 0.7f, bg * sh * 0.7f, bb * sh * 0.7f);
-    dda(x + 10, yy, x + 56, yy);
-  }
-  /* windscreen blue-tinted glass */
-  col3(0.28f, 0.55f, 0.82f);
-  glBegin(GL_POLYGON);
-  glVertex2f(x + 16, y + 42);
-  glVertex2f(x + 52, y + 42);
-  glVertex2f(x + 46, y + 28);
-  glVertex2f(x + 22, y + 28);
-  glEnd();
-  col3(0.55f, 0.75f, 0.95f); /* glass sheen */
-  dda(x + 18, y + 40, x + 30, y + 30);
-  /* rear window */
-  col3(0.22f, 0.44f, 0.72f);
-  glBegin(GL_POLYGON);
-  glVertex2f(x + 10, y + 42);
-  glVertex2f(x + 16, y + 42);
-  glVertex2f(x + 22, y + 28);
-  glVertex2f(x + 14, y + 28);
-  glEnd();
-  /* door line */
-  col3(br * 0.55f, bg * 0.55f, bb * 0.55f);
-  dda(x + 36, y + 8, x + 36, y + 28);
-  /* headlights */
-  float hx = (dir > 0) ? (x + 68) : (x + 4);
-  glow(hx, y + 18, 5, 22, 1.0f, 0.95f, 0.75f);
-  col3(1.0f, 0.98f, 0.88f);
-  fc(hx, y + 18, 5);
-  /* tail lights */
-  float tx = (dir > 0) ? (x + 4) : (x + 68);
-  glow(tx, y + 18, 3, 12, 0.95f, 0.05f, 0.05f);
-  col3(0.9f, 0.05f, 0.05f);
-  fc(tx, y + 18, 3);
-  /* roof rack shadow line */
-  col3(br * 0.45f, bg * 0.45f, bb * 0.45f);
-  dda(x + 10, y + 42, x + 56, y + 42);
-}
 
 /* Realistic traffic light with pole box */
 void trafficLight(float x, float y)
@@ -202,92 +122,56 @@ void trafficLight(float x, float y)
 
 void scene1()
 {
-  /* ── Sky: deep night gradient ── */
+  /* ── 1. Scoped Variables for Movement (From Scene 2) ── */
+  float speed  = 120.0f;
+  float scroll = fmodf(T * speed, W + 240.0f);
+
+  /* ── 2. Sky & Atmosphere (Original Scene 1) ── */
   Stop sky1[] = {{0.0f, 0.02f, 0.02f, 0.10f}, {0.45f, 0.04f, 0.04f, 0.18f}, {0.75f, 0.06f, 0.06f, 0.22f}, {1.0f, 0.08f, 0.08f, 0.26f}};
   skyGrad(sky1, 4);
   drawStars(1.0f);
   drawMoon(720, 535, 0.06f, 0.06f, 0.22f);
 
-  /* distant city glow on horizon */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (float r = 0; r < 45; r += 2)
-  {
-    float a = (45 - r) / 45.0f * 0.18f;
-    glColor4f(0.6f, 0.3f, 0.8f, a);
-    mca(400, 222, r);
-  }
-  glDisable(GL_BLEND);
-
-  /* 8 buildings — realistic materials */
-  srand(7); /* deterministic windows */
+  /* ── 3. City Background (Original Scene 1) ── */
+  srand(7);
   building(0, 222, 68, 290, 0.12f, 0.13f, 0.17f, 6, 2, 0.9f, 0.85f, 0.55f);
-  building(72, 222, 55, 215, 0.14f, 0.11f, 0.16f, 5, 2, 0.55f, 0.80f, 0.95f);
   building(130, 222, 88, 265, 0.10f, 0.14f, 0.16f, 6, 3, 0.90f, 0.88f, 0.60f);
-  building(222, 222, 60, 178, 0.16f, 0.14f, 0.10f, 4, 2, 0.85f, 0.75f, 0.45f);
   building(520, 222, 80, 308, 0.09f, 0.11f, 0.20f, 7, 3, 0.55f, 0.82f, 0.98f);
-  building(604, 222, 60, 235, 0.15f, 0.11f, 0.14f, 5, 2, 0.95f, 0.82f, 0.55f);
-  building(668, 222, 68, 198, 0.11f, 0.16f, 0.12f, 4, 2, 0.75f, 0.95f, 0.65f);
   building(740, 222, 56, 278, 0.16f, 0.11f, 0.16f, 6, 2, 0.90f, 0.70f, 0.95f);
-
-  /* neon signs */
   neonSign(110, 418, 1.0f, 0.08f, 0.45f, 5);
   neonSign(595, 385, 0.08f, 0.85f, 1.0f, 5);
-  neonSign(695, 348, 1.0f, 0.55f, 0.02f, 4);
 
-  /* ── Wet asphalt road ── */
-  /* base asphalt with slight blue-grey wet tint */
-  for (float yy = 0; yy < 222; yy += 0.5f)
-  {
-    float t = yy / 222;
-    col3(0.11f + t * 0.03f, 0.11f + t * 0.03f, 0.15f + t * 0.04f);
-    dda(0, yy, W, yy);
-  }
-  /* road lane colour */
-  for (float yy = 55; yy < 168; yy += 0.5f)
-  {
-    float t = (yy - 55) / 113.0f;
-    col3(0.14f + t * 0.02f, 0.14f + t * 0.02f, 0.18f + t * 0.02f);
-    dda(0, yy, W, yy);
-  }
-  /* rain puddle shimmer streaks */
-  col3(0.20f, 0.20f, 0.28f);
-  for (int i = 0; i < 14; i++)
-  {
-    float px = 30 + i * 55.0f, pw = 20 + sinf(i * 1.3f) * 12;
-    float py = 35 + sinf(i * 2.1f) * 18;
-    for (float dy = 0; dy < 4; dy += 0.5f)
-      dda(px, py + dy, px + pw, py + dy);
-  }
-  /* kerb lines */
+  /* ── 4. Road Logic (Integrated from Scene 2) ── */
+  // Base asphalt
+  col3(0.12f, 0.12f, 0.14f);
+  fillRect(0, 0, W, 222);
+
+  // Kerb lines (Modified Scene 1)
   col3(0.48f, 0.48f, 0.52f);
-  dda(0, 55, W, 55);
-  dda(0, 167, W, 167);
-  /* kerb highlight */
-  col3(0.60f, 0.60f, 0.65f);
-  dda(0, 56, W, 56);
-  dda(0, 168, W, 168);
-  /* centre lane dashes with glow */
-  for (int i = 0; i < 14; i++)
-  {
-    float dx = i * 60.0f;
-    glow(dx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
-    col3(0.78f, 0.68f, 0.02f);
-    dda(dx, 111, dx + 36, 111);
+  dda(0, 55, W, 55); dda(0, 167, W, 167);
+
+  // Scrolling Centre dashes (From Scene 2 Logic)
+  col3(0.78f, 0.68f, 0.02f);
+  for (float rx = -120; rx < W + 120; rx += 140) {
+    float lx = fmodf(rx + scroll, W + 240.0f) - 120.0f;
+    // Glow effect from scene 1 applied to scrolling dashes
+    glow(lx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
+    fillRect(lx, 110, 36, 3);
   }
 
+  /* ── 5. Static Props (Original Scene 1) ── */
   trafficLight(288, 167);
   trafficLight(508, 167);
-  srand(7);
-  realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
-  realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
-  drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
 
-  /* fog layer near ground */
+  /* ── 6. The Car (Integrated from Scene 2) ── */
+  // carX uses the same scroll calculation as Scene 2
+  float carX = fmodf(scroll, W + 200.0f) - 100.0f;
+  drawCar(carX, 72); // Positioned on the lower lane
+
+  /* ── 7. Fog (Original Scene 1) ── */
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (float yy = 0; yy < 35; yy += 2)
-  {
+  for (float yy = 0; yy < 35; yy += 2) {
     float a = (35 - yy) / 35.0f * 0.22f;
     glColor4f(0.18f, 0.18f, 0.28f, a);
     dda(0, yy, W, yy);

@@ -1,0 +1,44 @@
+# macOS: frameworks. Linux: install freeglut, then: make CC=cc LDLIBS='-lglut -lGLU -lGL -lm'
+# Windows: install MinGW-w64 and freeglut, then: make
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -O2 -std=c11
+UNAME_S := $(shell uname -s 2>/dev/null)
+
+ifeq ($(OS),Windows_NT)
+  # Windows (MinGW) settings
+  FREEGLUT_DIR ?= C:/freeglut
+  CFLAGS += -I$(FREEGLUT_DIR)/include
+  LDFLAGS ?= -L$(FREEGLUT_DIR)/lib -lfreeglut -lopengl32 -lglu32 -lm
+  TARGET = infinite_drive.exe
+  RM = del /Q
+  RUN = $(TARGET)
+else ifeq ($(UNAME_S),Darwin)
+  CFLAGS += -DGL_SILENCE_DEPRECATION=1
+  LDFLAGS ?= -framework OpenGL -framework GLUT -framework Cocoa
+  TARGET = infinite_drive
+  RM = rm -f
+  RUN = ./$(TARGET)
+else
+  LDFLAGS ?= -lglut -lGLU -lGL -lm
+  TARGET = infinite_drive
+  RM = rm -f
+  RUN = ./$(TARGET)
+endif
+
+OBJS = globals.o primitives.o scene1.o scene2.o scene3.o scene4.o scene5.o main_app.o
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+%.o: %.c drive.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	$(RM) $(TARGET) $(OBJS)
+
+run: $(TARGET)
+	./$(RUN)
+
+.PHONY: all clean run

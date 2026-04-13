@@ -219,3 +219,38 @@ void drawPerson(float x, float y, float shR, float shG, float shB)
   fc(x - 2.5f, y + 28, 1.2f);
   fc(x + 2.5f, y + 28, 1.2f);
 }
+
+/* Inside primitives.c */
+
+void drawCar(float x, float y)
+{
+  /* Shadow */
+  col3(0.10f, 0.10f, 0.10f);
+  for (float i = 0; i < 5; i++)
+    fillRect(x - 44 + i, y - 4, 88 - i * 2, 3);
+
+  /* Wheels */
+  col3(0.08f, 0.08f, 0.08f);
+  fc(x - 26, y, 10);
+  fc(x + 26, y, 10);
+  col3(0.35f, 0.35f, 0.35f);
+  fc(x - 26, y, 5);
+  fc(x + 26, y, 5);
+
+  /* Chassis */
+  col3(0.75f, 0.08f, 0.08f);
+  fillRect(x - 46, y + 4, 92, 20);
+
+  /* Roof */
+  col3(0.65f, 0.06f, 0.06f);
+  fillRect(x - 28, y + 24, 56, 18);
+
+  /* Windows */
+  col3(0.55f, 0.80f, 0.95f);
+  fillRect(x - 24, y + 26, 20, 12);
+  fillRect(x + 4, y + 26, 20, 12);
+
+  /* Headlight & Tail light */
+  col3(1.0f, 0.95f, 0.60f); fillRect(x + 40, y + 8, 7, 6);
+  col3(0.95f, 0.10f, 0.10f); fillRect(x - 47, y + 8, 6, 6);
+}
