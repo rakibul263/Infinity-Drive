@@ -402,65 +402,52 @@ void fluffyCloud(float x, float y, float s)
 
 void scene3()
 {
-  /* ── Warm afternoon sky ── */
-  Stop sky3[] = {{0.0f, 0.42f, 0.72f, 0.96f}, {0.55f, 0.65f, 0.85f, 0.98f}, {0.78f, 0.82f, 0.92f, 1.0f}, {1.0f, 0.90f, 0.95f, 1.0f}};
-  skyGrad(sky3, 4);
+  /* 1. Car Movement Logic */
+  // The car moves from left to right. Speed 120.0f makes it feel steady.
+  float carX = (T * 120.0f);
 
-  /* sun */
+  // This makes the car wrap back to the left side once it leaves the screen
+  // (W + 200) ensures it fully disappears before reappearing
+  carX = fmodf(carX, W + 200.0f) - 100.0f;
+
+  /* 2. Sky & Atmosphere (Static) */
+  Stop sky3[] = {{0.0f, 0.42f, 0.72f, 0.96f}, {0.55f, 0.65f, 0.85f, 0.98f}, {1.0f, 0.90f, 0.95f, 1.0f}};
+  skyGrad(sky3, 3);
+
   glow(680, 560, 30, 90, 1.0f, 0.92f, 0.45f);
-  col3(1.0f, 0.97f, 0.72f);
-  fc(680, 560, 26);
-
-  /* clouds */
+  col3(1.0f, 0.97f, 0.72f); fc(680, 560, 26);
   fluffyCloud(90, 510, 24);
   fluffyCloud(340, 535, 19);
-  fluffyCloud(580, 518, 21);
-  fluffyCloud(210, 548, 15);
 
-  /* ── Rich grass ── */
-  for (float yy = 0; yy < 225; yy += 0.5f)
-  {
+  /* 3. Background Scenery (Static) */
+  for (float yy = 0; yy < 225; yy += 0.5f) {
     float t = yy / 225.0f;
     col3(lp(0.12f, 0.20f, t), lp(0.45f, 0.58f, t), lp(0.10f, 0.14f, t));
     dda(0, yy, W, yy);
   }
-  /* grass blade texture */
-  col3(0.16f, 0.52f, 0.13f);
-  for (int i = 0; i < 80; i++)
-  {
-    float gx = i * 10.5f + sinf(i * 3.1f) * 4, gy = 225 + sinf(i * 2.7f) * 18;
-    dda(gx, gy, gx + 2, gy + 9);
-    dda(gx + 4, gy + 1, gx + 2, gy + 10);
-  }
-  /* flower meadow */
-  for (int i = 0; i < 30; i++)
-  {
-    float fx = 15 + i * 27.0f, fy = 222 + sinf(i * 1.8f) * 20;
-    col3(1.0f, 0.90f, 0.12f);
-    fc(fx, fy, 3);
-    col3(0.98f, 0.38f, 0.62f);
-    fc(fx + 14, fy + 7, 2.5f);
-    col3(0.75f, 0.35f, 0.90f);
-    fc(fx + 28, fy + 3, 2.5f);
-    /* stem */
-    col3(0.18f, 0.55f, 0.14f);
-    dda(fx, fy - 3, fx, fy - 9);
-  }
 
-  cobblePath(340, 0, 125, 228);
-
-  /* 5 cottages */
+  // Houses and Trees are now at fixed positions
   initSmoke();
-  cottage3(12, 222, 105, 94, 0.78f, 0.72f, 0.62f, 0.62f, 0.18f, 0.12f, 82);
-  cottage3(136, 222, 118, 104, 0.68f, 0.74f, 0.62f, 0.22f, 0.45f, 0.20f, 218);
-  cottage3(278, 222, 94, 88, 0.74f, 0.70f, 0.58f, 0.55f, 0.30f, 0.14f, 326);
-  cottage3(508, 222, 110, 100, 0.76f, 0.70f, 0.60f, 0.50f, 0.20f, 0.16f, 568);
-  cottage3(638, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 696);
+  cottage3(50,  222, 110, 100, 0.76f, 0.70f, 0.60f, 0.50f, 0.20f, 0.16f, 110);
+  realTree(180, 222, 90);
 
-  realTree(462, 222, 86);
-  realTree(480, 222, 98);
-  realFence(8, 222, 625);
-  stoneWell3(402, 222);
-  windmill3(735, 222, c3m);
-  drawPerson(c3p, 226, 0.52f, 0.28f, 0.12f);
+  cottage3(300, 222, 118, 104, 0.68f, 0.74f, 0.62f, 0.22f, 0.45f, 0.20f, 380);
+  realTree(450, 222, 110);
+
+  cottage3(600, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 660);
+  windmill3(750, 222, T * 40.0f);
+
+  /* 4. Road (Static) */
+  col3(0.30f, 0.28f, 0.25f);
+  fillRect(0, 0, W, 222);
+
+  // Center lane markings (Static cobblestones)
+  col3(0.40f, 0.38f, 0.35f);
+  for (int i = 0; i < W; i += 100) {
+    fillRect(i + 20, 108, 40, 6);
+  }
+
+  /* 5. Draw the Moving Car */
+  // carX is the only thing changing over time here
+  drawCar(carX, 72);
 }
